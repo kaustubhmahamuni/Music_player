@@ -43,14 +43,12 @@
 
     <!-- Controls -->
     <div class="flex justify-center gap-8 mt-4 items-center">
-      <!-- Previous -->
       <button onclick="prevSong()" class="hover:scale-110 transition transform">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white hover:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7M19 19l-7-7 7-7" />
         </svg>
       </button>
 
-      <!-- Play/Pause -->
       <button onclick="playPause()" id="playBtn"
               class="bg-white text-indigo-700 hover:bg-indigo-100 p-4 rounded-full shadow-lg transition transform hover:scale-110">
         <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
@@ -61,14 +59,12 @@
         </svg>
       </button>
 
-      <!-- Next -->
       <button onclick="nextSong()" class="hover:scale-110 transition transform">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white hover:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
         </svg>
       </button>
 
-      <!-- Shuffle -->
       <button onclick="toggleShuffle()" class="hover:scale-110 transition transform" title="Shuffle">
         <svg id="shuffleIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shuffle" viewBox="0 0 16 16">
           <path fill-rule="evenodd" d="M0 3.5A.5.5 0 0 1 .5 3H1c2.202 0 3.827 1.24 4.874 2.418.49.552.865 1.102 1.126 1.532.26-.43.636-.98 1.126-1.532C9.173 4.24 10.798 3 13 3v1c-1.798 0-3.173 1.01-4.126 2.082A9.6 9.6 0 0 0 7.556 8a9.6 9.6 0 0 0 1.317 1.918C9.828 10.99 11.204 12 13 12v1c-2.202 0-3.827-1.24-4.874-2.418A10.6 10.6 0 0 1 7 9.05c-.26.43-.636.98-1.126 1.532C4.827 11.76 3.202 13 1 13H.5a.5.5 0 0 1 0-1H1c1.798 0 3.173-1.01 4.126-2.082A9.6 9.6 0 0 0 6.444 8a9.6 9.6 0 0 0-1.317-1.918C4.172 5.01 2.796 4 1 4H.5a.5.5 0 0 1-.5-.5"/>
@@ -80,16 +76,21 @@
 
   <!-- Right Song List Section -->
   <div class="flex-1 max-h-[600px] overflow-y-auto space-y-4">
-      <div class="flex justify-between items-center">
-        <h3 class="text-lg font-semibold">Song List</h3>
-        <select id="sortOptions" onchange="sortSongs()" class="bg-white text-gray-800 px-3 py-1 rounded-md text-sm">
-          <option value="name">Sort by Name</option>
-        </select>
-      </div>
-      <ul id="songList" class="divide-y divide-white divide-opacity-10 text-sm">
-        <!-- Filled by JS -->
-      </ul>
+    <div class="flex justify-between items-center">
+      <h3 class="text-lg font-semibold">Song List</h3>
+      <select id="sortOptions" onchange="sortSongs()" class="bg-white text-gray-800 px-3 py-1 rounded-md text-sm">
+        <option value="name">Sort by Name</option>
+      </select>
     </div>
+
+    <!-- 🔍 Search Bar -->
+    <input type="text" id="searchInput" oninput="filterSongs()" placeholder="Search song..."
+      class="w-full mt-2 px-3 py-1 rounded-md bg-white text-gray-800 text-sm focus:outline-none focus:ring focus:border-indigo-300" />
+
+    <ul id="songList" class="divide-y divide-white divide-opacity-10 text-sm">
+      <!-- Filled by JS -->
+    </ul>
+  </div>
 </div>
 
 <script>
@@ -159,20 +160,20 @@
 
   function highlightCurrentSong() {
     document.querySelectorAll("#songList li").forEach((li, i) => {
-      li.classList.toggle("bg-indigo-800", i === currentIndex);
+      li.classList.toggle("bg-indigo-800", songs.indexOf(li.textContent) === currentIndex);
     });
   }
 
-  function renderSongList() {
+  function renderSongList(filteredSongs = songs) {
     const list = document.getElementById("songList");
     list.innerHTML = "";
-    songs.forEach((file, i) => {
+    filteredSongs.forEach((file) => {
       const li = document.createElement("li");
       li.className = "px-4 py-2 cursor-pointer hover:bg-indigo-700 rounded-md";
       li.textContent = file;
       li.onclick = () => {
-        currentIndex = i;
-        loadSong(i);
+        currentIndex = songs.indexOf(file);
+        loadSong(currentIndex);
         audio.play();
         playIcon.classList.add("hidden");
         pauseIcon.classList.remove("hidden");
@@ -184,11 +185,16 @@
 
   function sortSongs() {
     const select = document.getElementById("sortOptions");
-    const value = select.value;
-    if (value === "name") {
+    if (select.value === "name") {
       songs.sort();
       renderSongList();
     }
+  }
+
+  function filterSongs() {
+    const keyword = document.getElementById("searchInput").value.toLowerCase();
+    const filtered = songs.filter(song => song.toLowerCase().includes(keyword));
+    renderSongList(filtered);
   }
 
   function toggleShuffle() {
