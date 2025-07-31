@@ -83,12 +83,12 @@
       </select>
     </div>
 
-    <!-- 🔍 Search Bar -->
+    <!-- Search Bar -->
     <input type="text" id="searchInput" oninput="filterSongs()" placeholder="Search song..."
       class="w-full mt-2 px-3 py-1 rounded-md bg-white text-gray-800 text-sm focus:outline-none focus:ring focus:border-indigo-300" />
 
     <ul id="songList" class="divide-y divide-white divide-opacity-10 text-sm">
-      <!-- Filled by JS -->
+      <!-- JS Fills Songs -->
     </ul>
   </div>
 </div>
@@ -109,7 +109,23 @@
     .then((response) => response.json())
     .then((data) => {
       songs = data;
-      loadSong(currentIndex);
+
+      const savedIndex = localStorage.getItem("lastIndex");
+      const savedTime = localStorage.getItem("lastTime");
+
+      if (savedIndex !== null) {
+        currentIndex = parseInt(savedIndex);
+        loadSong(currentIndex);
+
+        audio.addEventListener("loadedmetadata", () => {
+          if (savedTime !== null) {
+            audio.currentTime = parseFloat(savedTime);
+          }
+        });
+      } else {
+        loadSong(currentIndex);
+      }
+
       renderSongList();
     });
 
@@ -213,6 +229,10 @@
     progress.value = percent || 0;
     currentTimeEl.textContent = formatTime(audio.currentTime);
     totalTimeEl.textContent = formatTime(audio.duration || 0);
+
+    // Save current song index and time
+    localStorage.setItem("lastIndex", currentIndex);
+    localStorage.setItem("lastTime", audio.currentTime);
   });
 
   progress.addEventListener("input", () => {
