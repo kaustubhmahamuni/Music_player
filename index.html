@@ -83,7 +83,6 @@
       </select>
     </div>
 
-    <!-- Search Bar -->
     <input type="text" id="searchInput" oninput="filterSongs()" placeholder="Search song..."
       class="w-full mt-2 px-3 py-1 rounded-md bg-white text-gray-800 text-sm focus:outline-none focus:ring focus:border-indigo-300" />
 
@@ -97,6 +96,7 @@
   let songs = [];
   let currentIndex = 0;
   let isShuffling = false;
+  let restoringFromLocal = true;
 
   const audio = document.getElementById("audio");
   const playIcon = document.getElementById("playIcon");
@@ -109,18 +109,17 @@
     .then((response) => response.json())
     .then((data) => {
       songs = data;
-
       const savedIndex = localStorage.getItem("lastIndex");
       const savedTime = localStorage.getItem("lastTime");
 
       if (savedIndex !== null) {
         currentIndex = parseInt(savedIndex);
         loadSong(currentIndex);
-
         audio.addEventListener("loadedmetadata", () => {
-          if (savedTime !== null) {
+          if (restoringFromLocal && savedTime !== null) {
             audio.currentTime = parseFloat(savedTime);
           }
+          restoringFromLocal = false;
         });
       } else {
         loadSong(currentIndex);
@@ -129,13 +128,18 @@
       renderSongList();
     });
 
-  function loadSong(index) {
+  function loadSong(index, fromUserClick = false) {
     const file = songs[index];
     audio.src = `songs/${file}`;
     document.getElementById("title").textContent = file;
     document.getElementById("artist").textContent = "Unknown Artist";
     document.getElementById("cover").src = "images/music.png";
     highlightCurrentSong();
+
+    if (fromUserClick) {
+      audio.currentTime = 0;
+      restoringFromLocal = false;
+    }
   }
 
   function playPause() {
@@ -189,7 +193,7 @@
       li.textContent = file;
       li.onclick = () => {
         currentIndex = songs.indexOf(file);
-        loadSong(currentIndex);
+        loadSong(currentIndex, true); // Pass true for manual click
         audio.play();
         playIcon.classList.add("hidden");
         pauseIcon.classList.remove("hidden");
@@ -230,7 +234,6 @@
     currentTimeEl.textContent = formatTime(audio.currentTime);
     totalTimeEl.textContent = formatTime(audio.duration || 0);
 
-    // Save current song index and time
     localStorage.setItem("lastIndex", currentIndex);
     localStorage.setItem("lastTime", audio.currentTime);
   });
