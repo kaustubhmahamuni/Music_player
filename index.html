@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Music Player</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(to right top, #1f2937, #4b5563);
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 font-sans">
+
+<div class="glass rounded-3xl shadow-xl p-6 w-full max-w-7xl text-white border border-white border-opacity-10 flex flex-col md:flex-row gap-6">
+
+  <!-- Left Player Section -->
+  <div class="flex-1 flex flex-col items-center text-center space-y-6">
+    <img id="cover" src="https://via.placeholder.com/150" alt="Cover"
+         class="w-40 h-40 md:w-64 md:h-64 rounded-xl shadow-lg object-cover ring-2 ring-white ring-opacity-20" style="border-radius: 3.75rem;"/>
+
+    <div>
+      <h2 id="title" class="text-xl md:text-2xl font-semibold">Loading...</h2>
+      <p id="artist" class="text-sm md:text-base text-gray-300">Unknown Artist</p>
+    </div>
+
+    <audio id="audio" class="hidden"></audio>
+
+    <!-- Progress Bar -->
+    <div class="w-full mt-4">
+      <div class="flex justify-between text-xs text-gray-300 px-1">
+        <span id="currentTime">0:00</span>
+        <span id="totalTime">0:00</span>
+      </div>
+      <input type="range" id="progress" value="0" min="0" max="100" class="w-full h-1 mt-1 accent-indigo-500">
+    </div>
+
+    <!-- Controls -->
+    <div class="flex justify-center gap-8 mt-4 items-center">
+      <!-- Previous -->
+      <button onclick="prevSong()" class="hover:scale-110 transition transform">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white hover:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7M19 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      <!-- Play/Pause -->
+      <button onclick="playPause()" id="playBtn"
+              class="bg-white text-indigo-700 hover:bg-indigo-100 p-4 rounded-full shadow-lg transition transform hover:scale-110">
+        <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M5 3v18l15-9L5 3z" />
+        </svg>
+        <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 hidden" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+        </svg>
+      </button>
+
+      <!-- Next -->
+      <button onclick="nextSong()" class="hover:scale-110 transition transform">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white hover:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+        </svg>
+      </button>
+
+      <!-- Shuffle -->
+      <button onclick="toggleShuffle()" class="hover:scale-110 transition transform" title="Shuffle">
+        <svg id="shuffleIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shuffle" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M0 3.5A.5.5 0 0 1 .5 3H1c2.202 0 3.827 1.24 4.874 2.418.49.552.865 1.102 1.126 1.532.26-.43.636-.98 1.126-1.532C9.173 4.24 10.798 3 13 3v1c-1.798 0-3.173 1.01-4.126 2.082A9.6 9.6 0 0 0 7.556 8a9.6 9.6 0 0 0 1.317 1.918C9.828 10.99 11.204 12 13 12v1c-2.202 0-3.827-1.24-4.874-2.418A10.6 10.6 0 0 1 7 9.05c-.26.43-.636.98-1.126 1.532C4.827 11.76 3.202 13 1 13H.5a.5.5 0 0 1 0-1H1c1.798 0 3.173-1.01 4.126-2.082A9.6 9.6 0 0 0 6.444 8a9.6 9.6 0 0 0-1.317-1.918C4.172 5.01 2.796 4 1 4H.5a.5.5 0 0 1-.5-.5"/>
+          <path d="M13 5.466V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m0 9v-3.932a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Right Song List Section -->
+  <div class="flex-1 max-h-[600px] overflow-y-auto space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="text-lg font-semibold">Song List</h3>
+        <select id="sortOptions" onchange="sortSongs()" class="bg-white text-gray-800 px-3 py-1 rounded-md text-sm">
+          <option value="name">Sort by Name</option>
+        </select>
+      </div>
+      <ul id="songList" class="divide-y divide-white divide-opacity-10 text-sm">
+        <!-- Filled by JS -->
+      </ul>
+    </div>
+</div>
+
+<script>
+  let songs = [];
+  let currentIndex = 0;
+  let isShuffling = false;
+
+  const audio = document.getElementById("audio");
+  const playIcon = document.getElementById("playIcon");
+  const pauseIcon = document.getElementById("pauseIcon");
+  const progress = document.getElementById("progress");
+  const currentTimeEl = document.getElementById("currentTime");
+  const totalTimeEl = document.getElementById("totalTime");
+
+  fetch("music.json")
+    .then((response) => response.json())
+    .then((data) => {
+      songs = data;
+      loadSong(currentIndex);
+      renderSongList();
+    });
+
+  function loadSong(index) {
+    const file = songs[index];
+    audio.src = `songs/${file}`;
+    document.getElementById("title").textContent = file;
+    document.getElementById("artist").textContent = "Unknown Artist";
+    document.getElementById("cover").src = "images/music.png";
+    highlightCurrentSong();
+  }
+
+  function playPause() {
+    if (audio.paused) {
+      audio.play();
+      playIcon.classList.add("hidden");
+      pauseIcon.classList.remove("hidden");
+    } else {
+      audio.pause();
+      playIcon.classList.remove("hidden");
+      pauseIcon.classList.add("hidden");
+    }
+  }
+
+  function prevSong() {
+    currentIndex = (currentIndex - 1 + songs.length) % songs.length;
+    loadSong(currentIndex);
+    audio.play();
+    playIcon.classList.add("hidden");
+    pauseIcon.classList.remove("hidden");
+  }
+
+  function nextSong() {
+    if (isShuffling) {
+      let next;
+      do {
+        next = Math.floor(Math.random() * songs.length);
+      } while (next === currentIndex);
+      currentIndex = next;
+    } else {
+      currentIndex = (currentIndex + 1) % songs.length;
+    }
+    loadSong(currentIndex);
+    audio.play();
+    playIcon.classList.add("hidden");
+    pauseIcon.classList.remove("hidden");
+  }
+
+  function highlightCurrentSong() {
+    document.querySelectorAll("#songList li").forEach((li, i) => {
+      li.classList.toggle("bg-indigo-800", i === currentIndex);
+    });
+  }
+
+  function renderSongList() {
+    const list = document.getElementById("songList");
+    list.innerHTML = "";
+    songs.forEach((file, i) => {
+      const li = document.createElement("li");
+      li.className = "px-4 py-2 cursor-pointer hover:bg-indigo-700 rounded-md";
+      li.textContent = file;
+      li.onclick = () => {
+        currentIndex = i;
+        loadSong(i);
+        audio.play();
+        playIcon.classList.add("hidden");
+        pauseIcon.classList.remove("hidden");
+      };
+      list.appendChild(li);
+    });
+    highlightCurrentSong();
+  }
+
+  function sortSongs() {
+    const select = document.getElementById("sortOptions");
+    const value = select.value;
+    if (value === "name") {
+      songs.sort();
+      renderSongList();
+    }
+  }
+
+  function toggleShuffle() {
+    isShuffling = !isShuffling;
+    document.getElementById("shuffleIcon").classList.toggle("text-green-400", isShuffling);
+  }
+
+  function formatTime(sec) {
+    const minutes = Math.floor(sec / 60);
+    const seconds = Math.floor(sec % 60).toString().padStart(2, '0');
+    return `${minutes}:${seconds}`;
+  }
+
+  audio.addEventListener("timeupdate", () => {
+    const percent = (audio.currentTime / audio.duration) * 100;
+    progress.value = percent || 0;
+    currentTimeEl.textContent = formatTime(audio.currentTime);
+    totalTimeEl.textContent = formatTime(audio.duration || 0);
+  });
+
+  progress.addEventListener("input", () => {
+    const seekTime = (progress.value / 100) * audio.duration;
+    audio.currentTime = seekTime;
+  });
+
+  audio.addEventListener("ended", nextSong);
+</script>
+
+</body>
+</html>
