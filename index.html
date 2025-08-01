@@ -27,7 +27,7 @@
 
     <div>
       <h2 id="title" class="text-xl md:text-2xl font-semibold">Loading...</h2>
-      <p id="artist" class="text-sm md:text-base text-gray-300">Unknown Artist</p>
+<!--       <p id="artist" class="text-sm md:text-base text-gray-300">Unknown Artist</p> -->
     </div>
 
     <audio id="audio" class="hidden"></audio>
@@ -132,7 +132,7 @@
     const file = songs[index];
     audio.src = `songs/${file}`;
     document.getElementById("title").textContent = file;
-    document.getElementById("artist").textContent = "Unknown Artist";
+    // document.getElementById("artist").textContent = "Unknown Artist";
     document.getElementById("cover").src = "images/music.png";
     highlightCurrentSong();
 
