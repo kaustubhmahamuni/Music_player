@@ -92,7 +92,7 @@
   </div>
 </div>
 
-<script>
+<script defer>
   let songs = [];
   let currentIndex = 0;
   let isShuffling = false;
@@ -104,11 +104,19 @@
   const progress = document.getElementById("progress");
   const currentTimeEl = document.getElementById("currentTime");
   const totalTimeEl = document.getElementById("totalTime");
+  const titleEl = document.getElementById("title");
 
-  fetch("music.json")
-    .then((response) => response.json())
-    .then((data) => {
-      songs = data;
+  async function loadSongs() {
+    titleEl.textContent = "Loading songs...";
+    try {
+      const res = await fetch("music.json");
+      songs = await res.json();
+
+      if (songs.length === 0) {
+        titleEl.textContent = "No songs found";
+        return;
+      }
+
       const savedIndex = localStorage.getItem("lastIndex");
       const savedTime = localStorage.getItem("lastTime");
 
@@ -126,13 +134,20 @@
       }
 
       renderSongList();
-    });
+    } catch (err) {
+      titleEl.textContent = "Error loading songs.";
+      console.error(err);
+    }
+  }
 
   function loadSong(index, fromUserClick = false) {
     const file = songs[index];
+    if (!file) return;
+
+    if (audio.src.endsWith(file)) return;
+
     audio.src = `songs/${file}`;
-    document.getElementById("title").textContent = file;
-    // document.getElementById("artist").textContent = "Unknown Artist";
+    titleEl.textContent = file;
     document.getElementById("cover").src = "images/music.png";
     highlightCurrentSong();
 
@@ -187,19 +202,23 @@
   function renderSongList(filteredSongs = songs) {
     const list = document.getElementById("songList");
     list.innerHTML = "";
+    const fragment = document.createDocumentFragment();
+
     filteredSongs.forEach((file) => {
       const li = document.createElement("li");
       li.className = "px-4 py-2 cursor-pointer hover:bg-indigo-700 rounded-md";
       li.textContent = file;
       li.onclick = () => {
         currentIndex = songs.indexOf(file);
-        loadSong(currentIndex, true); // Pass true for manual click
+        loadSong(currentIndex, true);
         audio.play();
         playIcon.classList.add("hidden");
         pauseIcon.classList.remove("hidden");
       };
-      list.appendChild(li);
+      fragment.appendChild(li);
     });
+
+    list.appendChild(fragment);
     highlightCurrentSong();
   }
 
@@ -244,8 +263,10 @@
   });
 
   audio.addEventListener("ended", nextSong);
-</script>
 
+  // Start loading songs on page load
+  window.addEventListener("DOMContentLoaded", loadSongs);
+</script>
 </body>
 </html>
 <script>
