@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Music Player</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -12,69 +12,66 @@
     .glass {
       background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
     }
   </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 font-sans">
+<body class="min-h-screen flex items-center justify-center p-4 font-sans text-white">
 
-<div class="glass rounded-3xl shadow-xl p-6 w-full max-w-7xl text-white border border-white border-opacity-10 flex flex-col md:flex-row gap-6">
+<div class="glass rounded-3xl shadow-xl p-6 w-full max-w-7xl border border-white/10 flex flex-col md:flex-row gap-6">
 
   <!-- Left Player Section -->
-  <div class="flex-1 flex flex-col items-center text-center space-y-6">
-    <img id="cover" src="https://via.placeholder.com/150" alt="Cover"
-         class="w-40 h-40 md:w-64 md:h-64 rounded-xl shadow-lg object-cover ring-2 ring-white ring-opacity-20" style="border-radius: 3.75rem;"/>
+  <div class="flex-1 flex flex-col items-center text-center gap-6">
+    <img id="cover" src="https://via.placeholder.com/150" alt="Cover" class="w-40 h-40 md:w-64 md:h-64 rounded-[3.75rem] shadow-lg ring-2 ring-white/20 object-cover"/>
 
     <div>
       <h2 id="title" class="text-xl md:text-2xl font-semibold">Loading...</h2>
-<!--       <p id="artist" class="text-sm md:text-base text-gray-300">Unknown Artist</p> -->
     </div>
 
-    <audio id="audio" class="hidden"></audio>
+    <audio id="audio" preload="auto" class="hidden"></audio>
 
-    <!-- Progress Bar -->
-    <div class="w-full mt-4">
+    <!-- Progress -->
+    <div class="w-full">
       <div class="flex justify-between text-xs text-gray-300 px-1">
         <span id="currentTime">0:00</span>
         <span id="totalTime">0:00</span>
       </div>
-      <input type="range" id="progress" value="0" min="0" max="100" class="w-full h-1 mt-1 accent-indigo-500">
+      <input type="range" id="progress" value="0" min="0" max="100" class="w-full mt-1 accent-indigo-500 h-1">
     </div>
 
     <!-- Controls -->
-    <div class="flex justify-center gap-8 mt-4 items-center">
-      <button onclick="prevSong()" class="hover:scale-110 transition transform">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white hover:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div class="flex justify-center items-center gap-8 mt-2">
+      <button onclick="prevSong()" title="Previous" class="hover:scale-110 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white hover:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7M19 19l-7-7 7-7" />
         </svg>
       </button>
 
       <button onclick="playPause()" id="playBtn"
-              class="bg-white text-indigo-700 hover:bg-indigo-100 p-4 rounded-full shadow-lg transition transform hover:scale-110">
-        <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
+        class="bg-white text-indigo-700 hover:bg-indigo-100 p-4 rounded-full shadow-lg hover:scale-110 transition">
+        <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
           <path d="M5 3v18l15-9L5 3z" />
         </svg>
-        <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 hidden" fill="currentColor" viewBox="0 0 24 24">
+        <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 hidden" fill="currentColor" viewBox="0 0 24 24">
           <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
         </svg>
       </button>
 
-      <button onclick="nextSong()" class="hover:scale-110 transition transform">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white hover:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <button onclick="nextSong()" title="Next" class="hover:scale-110 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white hover:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
         </svg>
       </button>
 
-      <button onclick="toggleShuffle()" class="hover:scale-110 transition transform" title="Shuffle">
-        <svg id="shuffleIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shuffle" viewBox="0 0 16 16">
-          <path fill-rule="evenodd" d="M0 3.5A.5.5 0 0 1 .5 3H1c2.202 0 3.827 1.24 4.874 2.418.49.552.865 1.102 1.126 1.532.26-.43.636-.98 1.126-1.532C9.173 4.24 10.798 3 13 3v1c-1.798 0-3.173 1.01-4.126 2.082A9.6 9.6 0 0 0 7.556 8a9.6 9.6 0 0 0 1.317 1.918C9.828 10.99 11.204 12 13 12v1c-2.202 0-3.827-1.24-4.874-2.418A10.6 10.6 0 0 1 7 9.05c-.26.43-.636.98-1.126 1.532C4.827 11.76 3.202 13 1 13H.5a.5.5 0 0 1 0-1H1c1.798 0 3.173-1.01 4.126-2.082A9.6 9.6 0 0 0 6.444 8a9.6 9.6 0 0 0-1.317-1.918C4.172 5.01 2.796 4 1 4H.5a.5.5 0 0 1-.5-.5"/>
-          <path d="M13 5.466V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m0 9v-3.932a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192"/>
+      <button onclick="toggleShuffle()" title="Shuffle" class="hover:scale-110 transition">
+        <svg id="shuffleIcon" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="currentColor" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M0 3.5a.5.5 0 0 1 .5-.5H1c2.2 0 3.8 1.2 4.9 2.4.5.5.9 1.1 1.1 1.5.3-.4.6-1 1.1-1.5C9.2 4.2 10.8 3 13 3v1c-1.8 0-3.2 1-4.1 2.1a9.6 9.6 0 0 0-1.4 1.9 9.6 9.6 0 0 0 1.4 1.9c.9 1.1 2.3 2.1 4.1 2.1v1c-2.2 0-3.8-1.2-4.9-2.4a10.6 10.6 0 0 1-1.1-1.5c-.3.4-.6 1-1.1 1.5C4.8 11.8 3.2 13 1 13H.5a.5.5 0 0 1 0-1H1c1.8 0 3.2-1 4.1-2.1a9.6 9.6 0 0 0 1.4-1.9A9.6 9.6 0 0 0 5.1 7C4.2 5.9 2.8 5 1 5H.5a.5.5 0 0 1-.5-.5"/>
+          <path d="M13 5.5V1.5a.25.25 0 0 1 .4-.2l2.4 2a.25.25 0 0 1 0 .4l-2.4 2a.25.25 0 0 1-.4-.2zm0 9v-4a.25.25 0 0 1 .4-.2l2.4 2a.25.25 0 0 1 0 .4l-2.4 2a.25.25 0 0 1-.4-.2z"/>
         </svg>
       </button>
     </div>
   </div>
 
-  <!-- Right Song List Section -->
+  <!-- Song List -->
   <div class="flex-1 max-h-[600px] overflow-y-auto space-y-4">
     <div class="flex justify-between items-center">
       <h3 class="text-lg font-semibold">Song List</h3>
@@ -84,20 +81,13 @@
     </div>
 
     <input type="text" id="searchInput" oninput="filterSongs()" placeholder="Search song..."
-      class="w-full mt-2 px-3 py-1 rounded-md bg-white text-gray-800 text-sm focus:outline-none focus:ring focus:border-indigo-300" />
+      class="w-full mt-2 px-3 py-1 rounded-md bg-white text-gray-800 text-sm outline-none ring-0 focus:ring-2 focus:ring-indigo-300"/>
 
-    <ul id="songList" class="divide-y divide-white divide-opacity-10 text-sm">
-      <!-- JS Fills Songs -->
-    </ul>
+    <ul id="songList" class="divide-y divide-white/10 text-sm"></ul>
   </div>
 </div>
 
-<script defer>
-  let songs = [];
-  let currentIndex = 0;
-  let isShuffling = false;
-  let restoringFromLocal = true;
-
+<script>
   const audio = document.getElementById("audio");
   const playIcon = document.getElementById("playIcon");
   const pauseIcon = document.getElementById("pauseIcon");
@@ -105,6 +95,13 @@
   const currentTimeEl = document.getElementById("currentTime");
   const totalTimeEl = document.getElementById("totalTime");
   const titleEl = document.getElementById("title");
+  const songListEl = document.getElementById("songList");
+  const shuffleIcon = document.getElementById("shuffleIcon");
+
+  let songs = [];
+  let currentIndex = 0;
+  let isShuffling = false;
+  let restoringFromLocal = true;
 
   async function loadSongs() {
     titleEl.textContent = "Loading songs...";
@@ -112,25 +109,24 @@
       const res = await fetch("music.json");
       songs = await res.json();
 
-      if (songs.length === 0) {
-        titleEl.textContent = "No songs found";
+      if (!songs.length) {
+        titleEl.textContent = "No songs found.";
         return;
       }
 
-      const savedIndex = localStorage.getItem("lastIndex");
-      const savedTime = localStorage.getItem("lastTime");
+      const savedIndex = parseInt(localStorage.getItem("lastIndex"));
+      const savedTime = parseFloat(localStorage.getItem("lastTime"));
 
-      if (savedIndex !== null) {
-        currentIndex = parseInt(savedIndex);
-        loadSong(currentIndex);
+      currentIndex = !isNaN(savedIndex) ? savedIndex : 0;
+      loadSong(currentIndex);
+
+      if (!isNaN(savedTime)) {
         audio.addEventListener("loadedmetadata", () => {
-          if (restoringFromLocal && savedTime !== null) {
-            audio.currentTime = parseFloat(savedTime);
+          if (restoringFromLocal) {
+            audio.currentTime = savedTime;
+            restoringFromLocal = false;
           }
-          restoringFromLocal = false;
         });
-      } else {
-        loadSong(currentIndex);
       }
 
       renderSongList();
@@ -140,21 +136,20 @@
     }
   }
 
-  function loadSong(index, fromUserClick = false) {
+  function loadSong(index, fromClick = false) {
     const file = songs[index];
     if (!file) return;
-
-    if (audio.src.endsWith(file)) return;
 
     audio.src = `songs/${file}`;
     titleEl.textContent = file;
     document.getElementById("cover").src = "images/music.png";
-    highlightCurrentSong();
 
-    if (fromUserClick) {
+    if (fromClick) {
       audio.currentTime = 0;
       restoringFromLocal = false;
     }
+
+    highlightSong();
   }
 
   function playPause() {
@@ -193,18 +188,20 @@
     pauseIcon.classList.remove("hidden");
   }
 
-  function highlightCurrentSong() {
-    document.querySelectorAll("#songList li").forEach((li, i) => {
-      li.classList.toggle("bg-indigo-800", songs.indexOf(li.textContent) === currentIndex);
+  function toggleShuffle() {
+    isShuffling = !isShuffling;
+    shuffleIcon.classList.toggle("text-green-400", isShuffling);
+  }
+
+  function highlightSong() {
+    [...songListEl.children].forEach((li, i) => {
+      li.classList.toggle("bg-indigo-800", i === currentIndex);
     });
   }
 
-  function renderSongList(filteredSongs = songs) {
-    const list = document.getElementById("songList");
-    list.innerHTML = "";
-    const fragment = document.createDocumentFragment();
-
-    filteredSongs.forEach((file) => {
+  function renderSongList(filtered = songs) {
+    songListEl.innerHTML = "";
+    filtered.forEach((file, i) => {
       const li = document.createElement("li");
       li.className = "px-4 py-2 cursor-pointer hover:bg-indigo-700 rounded-md";
       li.textContent = file;
@@ -215,19 +212,14 @@
         playIcon.classList.add("hidden");
         pauseIcon.classList.remove("hidden");
       };
-      fragment.appendChild(li);
+      songListEl.appendChild(li);
     });
-
-    list.appendChild(fragment);
-    highlightCurrentSong();
+    highlightSong();
   }
 
   function sortSongs() {
-    const select = document.getElementById("sortOptions");
-    if (select.value === "name") {
-      songs.sort();
-      renderSongList();
-    }
+    songs.sort();
+    renderSongList();
   }
 
   function filterSongs() {
@@ -236,15 +228,10 @@
     renderSongList(filtered);
   }
 
-  function toggleShuffle() {
-    isShuffling = !isShuffling;
-    document.getElementById("shuffleIcon").classList.toggle("text-green-400", isShuffling);
-  }
-
   function formatTime(sec) {
-    const minutes = Math.floor(sec / 60);
-    const seconds = Math.floor(sec % 60).toString().padStart(2, '0');
-    return `${minutes}:${seconds}`;
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
   }
 
   audio.addEventListener("timeupdate", () => {
@@ -258,36 +245,23 @@
   });
 
   progress.addEventListener("input", () => {
-    const seekTime = (progress.value / 100) * audio.duration;
-    audio.currentTime = seekTime;
+    audio.currentTime = (progress.value / 100) * audio.duration;
   });
 
   audio.addEventListener("ended", nextSong);
 
-  // Start loading songs on page load
   window.addEventListener("DOMContentLoaded", loadSongs);
 </script>
+
+<!-- Security: Disable right-click and dev tools -->
+<script>
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.onkeydown = e => {
+    if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && [73, 74].includes(e.keyCode)) || (e.ctrlKey && e.keyCode === 85)) {
+      return false;
+    }
+  };
+</script>
+
 </body>
 </html>
-<script>
-// Disable right-click
-document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-});
-
-// Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
-document.onkeydown = function(e) {
-    // F12
-    if (e.keyCode === 123) {
-        return false;
-    }
-    // Ctrl+Shift+I or Ctrl+Shift+J
-    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) {
-        return false;
-    }
-    // Ctrl+U
-    if (e.ctrlKey && e.keyCode === 85) {
-        return false;
-    }
-};
-</script>
