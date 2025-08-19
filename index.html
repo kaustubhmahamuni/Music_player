@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Music Player</title>
-   <link rel="icon" href="images/music.png" type="image/png" />
+  <link rel="icon" href="images/music.png" type="image/png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
@@ -15,20 +15,19 @@
       backdrop-filter: blur(16px);
     }
     @keyframes toastSlideInRight {
-    from {
-      opacity: 0;
-      transform: translateX(100%);
+      from {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
-    to {
-      opacity: 1;
-      transform: translateX(0);
+    .toast {
+      animation: toastSlideInRight 0.6s ease forwards;
     }
-  }
-
-  .toast {
-    animation: toastSlideInRight 0.6s ease forwards;
-  }
-</style>
+  </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 font-sans text-white">
 <!-- Toast popup message -->
@@ -124,6 +123,7 @@
   const titleEl = document.getElementById("title");
   const songListEl = document.getElementById("songList");
   const shuffleIcon = document.getElementById("shuffleIcon");
+  const searchInput = document.getElementById("searchInput");
 
   let songs = [];
   let currentIndex = 0;
@@ -157,6 +157,7 @@
       }
 
       renderSongList();
+      startTypingSuggestions(); // ✅ start typing effect
     } catch (err) {
       titleEl.textContent = "Error loading songs.";
       console.error(err);
@@ -277,8 +278,55 @@
 
   audio.addEventListener("ended", nextSong);
 
+  // 🔹 Animated typing suggestion in search bar
+  function startTypingSuggestions() {
+    if (!songs.length) return;
+    let i = 0, j = 0;
+    let deleting = false;
+    let typingPaused = false;
+
+    function type() {
+      if (typingPaused) return; // stop while user is typing
+
+      const current = songs[i];
+      if (!deleting) {
+        searchInput.placeholder = "Search " + current.substring(0, j++);
+        if (j > current.length) {
+          deleting = true;
+          setTimeout(type, 500); // short pause at end
+          return;
+        }
+      } else {
+        searchInput.placeholder = "Search " + current.substring(0, j--);
+        if (j < 0) {
+          deleting = false;
+          i = (i + 1) % songs.length;
+          j = 0;
+        }
+      }
+      setTimeout(type, deleting ? 50 : 80); // ⏩ fast typing/deleting
+    }
+
+    // Pause/resume animation on input
+    searchInput.addEventListener("input", () => {
+      if (searchInput.value.length > 0) {
+        typingPaused = true;
+        searchInput.placeholder = "Search..."; // restore static
+      } else {
+        if (typingPaused) {
+          typingPaused = false;
+          j = 0; // reset
+          type();
+        }
+      }
+    });
+
+    type();
+  }
+
   window.addEventListener("DOMContentLoaded", loadSongs);
 </script>
+
 
 <!-- Security: Disable right-click and dev tools -->
 <script>
@@ -301,5 +349,6 @@
     }, 6000); // 6 seconds
   });
 </script>
+
 </body>
 </html>
