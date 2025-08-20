@@ -225,14 +225,14 @@
   // 🔹 MediaSession API for lockscreen
  function updateMediaSession(song) {
   if ("mediaSession" in navigator) {
-   navigator.mediaSession.metadata = new MediaMetadata({
-  title: song.title,
-  artist: song.artist,
-  album: song.album,
-  artwork: [
-    { src: "images/music_square.png", sizes: "any", type: "image/png" }
-  ]
-  });
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: song.title,
+      artist: song.artist,
+      album: song.album,
+      artwork: [
+        { src: "images/Music_square.png", sizes: "any", type: "image/png" }
+      ]
+    });
 
     navigator.mediaSession.setActionHandler("play", () => audio.play());
     navigator.mediaSession.setActionHandler("pause", () => audio.pause());
@@ -448,46 +448,5 @@
   }
 });
 </script>
-   <script>
-  // square-image.js
-// Run: npm install sharp
-// Run: node square-image.js
-
-const sharp = require("sharp");
-const fs = require("fs");
-
-const inputPath = "images/music.png";
-const outputPath = "images/music_square.png";
-
-// First, read the image
-sharp(inputPath)
-  .metadata()
-  .then(meta => {
-    const maxSide = Math.max(meta.width, meta.height);
-
-    // Create a square canvas with transparent background
-    return sharp(inputPath)
-      .resize({
-        width: meta.width,
-        height: meta.height,
-        fit: "contain",
-        background: { r: 0, g: 0, b: 0, alpha: 0 } // transparent
-      })
-      .extend({
-        top: 0,
-        bottom: maxSide - meta.height,
-        left: 0,
-        right: maxSide - meta.width,
-        background: { r: 0, g: 0, b: 0, alpha: 0 }
-      })
-      .toFile(outputPath);
-  })
-  .then(() => {
-    console.log("✅ Square image created at:", outputPath);
-  })
-  .catch(err => {
-    console.error(err);
-  });
- </script>
 </body>
 </html>
