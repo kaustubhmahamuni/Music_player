@@ -40,7 +40,9 @@
     <button onclick="document.getElementById('toastNotice').style.display='none'" class="text-xl leading-none hover:text-yellow-600">&times;</button>
   </div>
 </div>
+
 <div class="glass rounded-2xl shadow-xl p-8 w-full max-w-9xl border border-white/10 flex flex-col md:flex-row gap-6 ">
+
   <!-- Left Player Section -->
   <div class="flex-1 flex flex-col items-center text-center gap-6">
     <img id="cover" src="https://via.placeholder.com/150" alt="Cover" class="w-40 h-40 md:w-64 md:h-64 rounded-[3.75rem] shadow-lg ring-2 ring-white/20 object-cover"/>
@@ -96,7 +98,6 @@
       </div>
   </div>
 
-  <!-- Song List -->
   <div class="flex-1 space-y-4">
   <!-- Header -->
   <div class="flex justify-between items-center">
@@ -113,10 +114,8 @@
     class="w-full px-3 py-1 rounded-md bg-white text-gray-800 text-sm outline-none ring-0 focus:ring-2 focus:ring-indigo-300"/>
 
   <!-- Scrollable Song List -->
-  <ul id="songList" class="max-h-[600px] overflow-y-auto divide-y divide-white/10 text-sm custom-scroll"></ul>
+  <ul id="songList" class="max-h-[500px] overflow-y-auto divide-y divide-white/10 text-sm custom-scroll"></ul>
 </div>
-
-
 <style>
 /* Hide scrollbar until scroll needed */
 .custom-scroll {
@@ -146,9 +145,7 @@
   display: block;
 }
 </style>
-
 </div>
-
 <script>
   const audio = document.getElementById("audio");
   const playIcon = document.getElementById("playIcon");
@@ -170,7 +167,16 @@
     titleEl.textContent = "Loading songs...";
     try {
       const res = await fetch("music.json");
-      songs = await res.json();
+      const data = await res.json();
+
+      // 🔹 Convert plain strings → objects for consistency
+      songs = data.map(file => ({
+        file,
+        title: file.replace(".mp3", ""), // use filename as title
+        artist: "Unknown Artist",
+        album: "My Playlist",
+        artwork: "images/music.png"
+      }));
 
       if (!songs.length) {
         titleEl.textContent = "No songs found.";
@@ -193,7 +199,7 @@
       }
 
       renderSongList();
-      startTypingSuggestions(); // ✅ start typing effect
+      startTypingSuggestions();
     } catch (err) {
       titleEl.textContent = "Error loading songs.";
       console.error(err);
@@ -201,12 +207,12 @@
   }
 
   function loadSong(index, fromClick = false) {
-    const file = songs[index];
-    if (!file) return;
+    const song = songs[index];
+    if (!song) return;
 
-    audio.src = `songs/${file}`;
-    titleEl.textContent = file;
-    document.getElementById("cover").src = "images/music.png";
+    audio.src = `songs/${song.file}`;
+    titleEl.textContent = song.title;
+    document.getElementById("cover").src = song.artwork;
 
     if (fromClick) {
       audio.currentTime = 0;
@@ -214,26 +220,37 @@
     }
 
     highlightSong();
+    updateMediaSession(song);
+  }
+
+  // 🔹 MediaSession API for lockscreen
+  function updateMediaSession(song) {
+    if ("mediaSession" in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: song.title,
+        artist: song.artist,
+        album: song.album,
+        artwork: [
+          { src: song.artwork, sizes: "512x512", type: "image/png" }
+        ]
+      });
+
+      navigator.mediaSession.setActionHandler("play", () => audio.play());
+      navigator.mediaSession.setActionHandler("pause", () => audio.pause());
+      navigator.mediaSession.setActionHandler("previoustrack", prevSong);
+      navigator.mediaSession.setActionHandler("nexttrack", nextSong);
+    }
   }
 
   function playPause() {
-    if (audio.paused) {
-      audio.play();
-      playIcon.classList.add("hidden");
-      pauseIcon.classList.remove("hidden");
-    } else {
-      audio.pause();
-      playIcon.classList.remove("hidden");
-      pauseIcon.classList.add("hidden");
-    }
+    if (audio.paused) audio.play();
+    else audio.pause();
   }
 
   function prevSong() {
     currentIndex = (currentIndex - 1 + songs.length) % songs.length;
     loadSong(currentIndex);
     audio.play();
-    playIcon.classList.add("hidden");
-    pauseIcon.classList.remove("hidden");
   }
 
   function nextSong() {
@@ -248,8 +265,6 @@
     }
     loadSong(currentIndex);
     audio.play();
-    playIcon.classList.add("hidden");
-    pauseIcon.classList.remove("hidden");
   }
 
   function toggleShuffle() {
@@ -265,16 +280,14 @@
 
   function renderSongList(filtered = songs) {
     songListEl.innerHTML = "";
-    filtered.forEach((file, i) => {
+    filtered.forEach((song) => {
       const li = document.createElement("li");
       li.className = "px-4 py-2 cursor-pointer hover:bg-indigo-700 rounded-md";
-      li.textContent = file;
+      li.textContent = song.title;
       li.onclick = () => {
-        currentIndex = songs.indexOf(file);
+        currentIndex = songs.indexOf(song);
         loadSong(currentIndex, true);
         audio.play();
-        playIcon.classList.add("hidden");
-        pauseIcon.classList.remove("hidden");
       };
       songListEl.appendChild(li);
     });
@@ -282,13 +295,15 @@
   }
 
   function sortSongs() {
-    songs.sort();
+    songs.sort((a, b) => a.title.localeCompare(b.title));
     renderSongList();
   }
 
   function filterSongs() {
-    const keyword = document.getElementById("searchInput").value.toLowerCase();
-    const filtered = songs.filter(song => song.toLowerCase().includes(keyword));
+    const keyword = searchInput.value.toLowerCase();
+    const filtered = songs.filter(song =>
+      song.title.toLowerCase().includes(keyword)
+    );
     renderSongList(filtered);
   }
 
@@ -314,6 +329,16 @@
 
   audio.addEventListener("ended", nextSong);
 
+  audio.addEventListener("play", () => {
+    playIcon.classList.add("hidden");
+    pauseIcon.classList.remove("hidden");
+  });
+
+  audio.addEventListener("pause", () => {
+    playIcon.classList.remove("hidden");
+    pauseIcon.classList.add("hidden");
+  });
+
   // 🔹 Animated typing suggestion in search bar
   function startTypingSuggestions() {
     if (!songs.length) return;
@@ -322,14 +347,14 @@
     let typingPaused = false;
 
     function type() {
-      if (typingPaused) return; // stop while user is typing
+      if (typingPaused) return;
 
-      const current = songs[i];
+      const current = songs[i].title;
       if (!deleting) {
         searchInput.placeholder = "Search " + current.substring(0, j++);
         if (j > current.length) {
           deleting = true;
-          setTimeout(type, 500); // short pause at end
+          setTimeout(type, 500);
           return;
         }
       } else {
@@ -340,18 +365,17 @@
           j = 0;
         }
       }
-      setTimeout(type, deleting ? 50 : 80); // ⏩ fast typing/deleting
+      setTimeout(type, deleting ? 50 : 80);
     }
 
-    // Pause/resume animation on input
     searchInput.addEventListener("input", () => {
       if (searchInput.value.length > 0) {
         typingPaused = true;
-        searchInput.placeholder = "Search..."; // restore static
+        searchInput.placeholder = "Search...";
       } else {
         if (typingPaused) {
           typingPaused = false;
-          j = 0; // reset
+          j = 0;
           type();
         }
       }
@@ -362,8 +386,6 @@
 
   window.addEventListener("DOMContentLoaded", loadSongs);
 </script>
-
-
 <!-- Security: Disable right-click and dev tools -->
 <script>
   document.addEventListener('contextmenu', e => e.preventDefault());
@@ -385,6 +407,47 @@
     }, 6000); // 6 seconds
   });
 </script>
+<script>
+  document.addEventListener("keydown", (e) => {
+  switch (e.key) {
+    case " ": // Play / Pause
+      e.preventDefault();
+      if (audio.paused) {
+        audio.play();
+      } else {
+        audio.pause();
+      }
+      break;
 
+    case "ArrowRight": // Next
+      nextSong();
+      break;
+
+    case "ArrowLeft": // Previous
+      prevSong();
+      break;
+
+    case "s": // Shuffle toggle
+    case "S":
+      shuffle = !shuffle;
+      alert("Shuffle " + (shuffle ? "On" : "Off"));
+      break;
+
+    case "r": // Repeat toggle
+    case "R":
+      repeat = !repeat;
+      alert("Repeat " + (repeat ? "On" : "Off"));
+      break;
+
+    case "ArrowUp": // Volume up
+      audio.volume = Math.min(1, audio.volume + 0.1);
+      break;
+
+    case "ArrowDown": // Volume down
+      audio.volume = Math.max(0, audio.volume - 0.1);
+      break;
+  }
+});
+</script>
 </body>
 </html>
