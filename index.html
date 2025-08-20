@@ -98,19 +98,50 @@
   </div>
 
   <!-- Song List -->
-  <div class="flex-1 max-h-[600px] overflow-y-auto space-y-4">
-    <div class="flex justify-between items-center">
-      <h3 class="text-lg font-semibold">Song List</h3>
-      <select id="sortOptions" onchange="sortSongs()" class="bg-white text-gray-800 px-3 py-1 rounded-md text-sm">
-        <option value="name">Sort by Name</option>
-      </select>
-    </div>
-
-    <input type="text" id="searchInput" oninput="filterSongs()" placeholder="Search song..."
-      class="w-full mt-2 px-3 py-1 rounded-md bg-white text-gray-800 text-sm outline-none ring-0 focus:ring-2 focus:ring-indigo-300"/>
-
-    <ul id="songList" class="divide-y divide-white/10 text-sm"></ul>
+  <div class="flex-1 max-h-[600px] overflow-y-auto space-y-4 custom-scroll">
+  <div class="flex justify-between items-center">
+    <h3 class="text-lg font-semibold">Song List</h3>
+    <select id="sortOptions" onchange="sortSongs()" class="bg-white text-gray-800 px-3 py-1 rounded-md text-sm">
+      <option value="name">Sort by Name</option>
+    </select>
   </div>
+
+  <input type="text" id="searchInput" oninput="filterSongs()" placeholder="Search song..."
+    class="w-full mt-2 px-3 py-1 rounded-md bg-white text-gray-800 text-sm outline-none ring-0 focus:ring-2 focus:ring-indigo-300"/>
+
+  <ul id="songList" class="divide-y divide-white/10 text-sm"></ul>
+</div>
+
+<style>
+/* Hide scrollbar until scroll needed */
+.custom-scroll {
+  scrollbar-width: thin;       /* Firefox */
+  scrollbar-color: #a0aec0 transparent;
+}
+
+/* Chrome, Edge, Safari */
+.custom-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background-color: #a0aec0;
+  border-radius: 10px;
+}
+
+/* Hide scrollbar if not scrolling */
+.custom-scroll::-webkit-scrollbar {
+  display: none;
+}
+.custom-scroll:hover::-webkit-scrollbar {
+  display: block;
+}
+</style>
+
 </div>
 
 <script>
