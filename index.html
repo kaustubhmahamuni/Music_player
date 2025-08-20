@@ -224,22 +224,22 @@
 
   // 🔹 MediaSession API for lockscreen
   function updateMediaSession(song) {
-    if ("mediaSession" in navigator) {
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: song.title,
-        artist: song.artist,
-        album: song.album,
-        artwork: [
-          { src: song.artwork, sizes: "512x512", type: "image/png" }
-        ]
-      });
+  if ("mediaSession" in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: song.title,
+      artist: song.artist,
+      album: song.album,
+      artwork: [
+        { src: "images/music.png", sizes: "any", type: "image/png" }
+      ]
+    });
 
-      navigator.mediaSession.setActionHandler("play", () => audio.play());
-      navigator.mediaSession.setActionHandler("pause", () => audio.pause());
-      navigator.mediaSession.setActionHandler("previoustrack", prevSong);
-      navigator.mediaSession.setActionHandler("nexttrack", nextSong);
-    }
+    navigator.mediaSession.setActionHandler("play", () => audio.play());
+    navigator.mediaSession.setActionHandler("pause", () => audio.pause());
+    navigator.mediaSession.setActionHandler("previoustrack", prevSong);
+    navigator.mediaSession.setActionHandler("nexttrack", nextSong);
   }
+}
 
   function playPause() {
     if (audio.paused) audio.play();
