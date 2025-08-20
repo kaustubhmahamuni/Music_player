@@ -98,19 +98,25 @@
   </div>
 
   <!-- Song List -->
-  <div class="flex-1 max-h-[600px] overflow-y-auto space-y-4 custom-scroll">
+  <div class="flex-1 space-y-4">
+  <!-- Header -->
   <div class="flex justify-between items-center">
     <h3 class="text-lg font-semibold">Song List</h3>
-    <select id="sortOptions" onchange="sortSongs()" class="bg-white text-gray-800 px-3 py-1 rounded-md text-sm">
+    <select id="sortOptions" onchange="sortSongs()" 
+      class="bg-white text-gray-800 px-3 py-1 rounded-md text-sm">
       <option value="name">Sort by Name</option>
     </select>
   </div>
 
-  <input type="text" id="searchInput" oninput="filterSongs()" placeholder="Search song..."
-    class="w-full mt-2 px-3 py-1 rounded-md bg-white text-gray-800 text-sm outline-none ring-0 focus:ring-2 focus:ring-indigo-300"/>
+  <!-- Search box -->
+  <input type="text" id="searchInput" oninput="filterSongs()" 
+    placeholder="Search song..."
+    class="w-full px-3 py-1 rounded-md bg-white text-gray-800 text-sm outline-none ring-0 focus:ring-2 focus:ring-indigo-300"/>
 
-  <ul id="songList" class="divide-y divide-white/10 text-sm"></ul>
+  <!-- Scrollable Song List -->
+  <ul id="songList" class="max-h-[600px] overflow-y-auto divide-y divide-white/10 text-sm custom-scroll"></ul>
 </div>
+
 
 <style>
 /* Hide scrollbar until scroll needed */
