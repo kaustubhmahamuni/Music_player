@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Music Player</title>
+  <link rel="icon" href="images/music.png" type="image/png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(to right top, #1f2937, #4b5563);
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(16px);
+    }
+    @keyframes toastSlideInRight {
+      from { opacity: 0; transform: translateX(100%); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .toast {
+      animation: toastSlideInRight 0.6s ease forwards;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 font-sans text-white">
+
+<!-- Toast popup message -->
+<div id="toastNotice" class="fixed top-6 right-6 bg-yellow-100 border border-yellow-300 text-yellow-900 px-4 py-3 rounded-lg shadow-lg w-[320px] z-50 toast">
+  <div class="flex justify-between items-start gap-2">
+    <div>
+      <strong class="font-bold">Note:</strong>
+      <span class="block text-sm">If an update is pushed, you may experience issues while listening to music. I apologize for the inconvenience.</span>
+    </div>
+    <button onclick="document.getElementById('toastNotice').style.display='none'" class="text-xl leading-none hover:text-yellow-600">&times;</button>
+  </div>
+</div>
+
+<div class="glass rounded-2xl shadow-xl p-8 w-full max-w-4xl border border-white/10 flex flex-col md:flex-row gap-6">
+
+  <!-- Left Player Section -->
+  <div class="flex-1 flex flex-col items-center text-center gap-6">
+    <img id="cover" src="https://via.placeholder.com/150" alt="Cover" class="w-40 h-40 md:w-64 md:h-64 rounded-[3.75rem] shadow-lg ring-2 ring-white/20 object-cover"/>
+
+    <div>
+      <h2 id="title" class="text-xl md:text-2xl font-semibold">Loading...</h2>
+    </div>
+
+    <!-- OPTIMIZED: preload changed from auto to metadata to save mobile bandwidth -->
+    <audio id="audio" preload="metadata" class="hidden"></audio>
+
+    <!-- Progress -->
+    <div class="w-full">
+      <div class="flex justify-between text-xs text-gray-300 px-1">
+        <span id="currentTime">0:00</span>
+        <span id="totalTime">0:00</span>
+      </div>
+      <input type="range" id="progress" value="0" min="0" max="100" class="w-full mt-1 accent-indigo-500 h-1">
+    </div>
+
+    <!-- Controls -->
+    <div class="flex justify-center items-center gap-8 mt-2">
+      <button onclick="prevSong()" title="Previous" class="hover:scale-110 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white hover:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7M19 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      <button onclick="playPause()" id="playBtn"
+        class="bg-white text-indigo-700 hover:bg-indigo-100 p-4 rounded-full shadow-lg hover:scale-110 transition">
+        <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M5 3v18l15-9L5 3z" />
+        </svg>
+        <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 hidden" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+        </svg>
+      </button>
+
+      <button onclick="nextSong()" title="Next" class="hover:scale-110 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white hover:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+        </svg>
+      </button>
+
+      <button onclick="toggleShuffle()" title="Shuffle" class="hover:scale-110 transition">
+        <svg id="shuffleIcon" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="currentColor" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M0 3.5a.5.5 0 0 1 .5-.5H1c2.2 0 3.8 1.2 4.9 2.4.5.5.9 1.1 1.1 1.5.3-.4.6-1 1.1-1.5C9.2 4.2 10.8 3 13 3v1c-1.8 0-3.2 1-4.1 2.1a9.6 9.6 0 0 0-1.4 1.9 9.6 9.6 0 0 0 1.4 1.9c.9 1.1 2.3 2.1 4.1 2.1v1c-2.2 0-3.8-1.2-4.9-2.4a10.6 10.6 0 0 1-1.1-1.5c-.3.4-.6 1-1.1 1.5C4.8 11.8 3.2 13 1 13H.5a.5.5 0 0 1 0-1H1c1.8 0 3.2-1 4.1-2.1a9.6 9.6 0 0 0 1.4-1.9A9.6 9.6 0 0 0 5.1 7C4.2 5.9 2.8 5 1 5H.5a.5.5 0 0 1-.5-.5"/>
+          <path d="M13 5.5V1.5a.25.25 0 0 1 .4-.2l2.4 2a.25.25 0 0 1 0 .4l-2.4 2a.25.25 0 0 1-.4-.2zm0 9v-4a.25.25 0 0 1 .4-.2l2.4 2a.25.25 0 0 1 0 .4l-2.4 2a.25.25 0 0 1-.4-.2z"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="mt-8 text-sm italic text-white/60">
+      Developed by <span class="text-white font-semibold">Kaustubh Mahamuni</span>
+    </div>
+  </div>
+
+  <!-- Right Playlist Section -->
+  <div class="flex-1 space-y-4">
+    <div class="flex justify-between items-center">
+      <h3 class="text-lg font-semibold">Song List</h3>
+      <select id="sortOptions" onchange="sortSongs()" class="bg-white text-gray-800 px-3 py-1 rounded-md text-sm">
+        <option value="name">Sort by Name</option>
+      </select>
+    </div>
+
+    <input type="text" id="searchInput" oninput="filterSongs()" placeholder="Search song..."
+      class="w-full px-3 py-1 rounded-md bg-white text-gray-800 text-sm outline-none ring-0 focus:ring-2 focus:ring-indigo-300"/>
+
+    <ul id="songList" class="max-h-[500px] overflow-y-auto divide-y divide-white/10 text-sm custom-scroll"></ul>
+  </div>
+</div>
+
+<style>
+.custom-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #a0aec0 transparent;
+}
+.custom-scroll::-webkit-scrollbar { width: 6px; display: none; }
+.custom-scroll:hover::-webkit-scrollbar { display: block; }
+.custom-scroll::-webkit-scrollbar-track { background: transparent; }
+.custom-scroll::-webkit-scrollbar-thumb { background-color: #a0aec0; border-radius: 10px; }
+</style>
+
+<script>
+  const audio = document.getElementById("audio");
+  const playIcon = document.getElementById("playIcon");
+  const pauseIcon = document.getElementById("pauseIcon");
+  const progress = document.getElementById("progress");
+  const currentTimeEl = document.getElementById("currentTime");
+  const totalTimeEl = document.getElementById("totalTime");
+  const titleEl = document.getElementById("title");
+  const songListEl = document.getElementById("songList");
+  const shuffleIcon = document.getElementById("shuffleIcon");
+  const searchInput = document.getElementById("searchInput");
+
+  let songs = [];
+  let currentIndex = 0;
+  let isShuffling = false;
+  let restoringFromLocal = true;
+
+  async function loadSongs() {
+    titleEl.textContent = "Loading songs...";
+    try {
+      const res = await fetch("music.json");
+      const data = await res.json();
+
+      songs = data.map(file => ({
+        file,
+        title: file.replace(".mp3", ""),
+        album: "My Playlist",
+        artwork: "images/music.png"
+      }));
+
+      if (!songs.length) {
+        titleEl.textContent = "No songs found.";
+        return;
+      }
+
+      const savedIndex = parseInt(localStorage.getItem("lastIndex"));
+      const savedTime = parseFloat(localStorage.getItem("lastTime"));
+
+      currentIndex = !isNaN(savedIndex) ? savedIndex : 0;
+      loadSong(currentIndex);
+
+      if (!isNaN(savedTime)) {
+        audio.addEventListener("loadedmetadata", () => {
+          if (restoringFromLocal) {
+            audio.currentTime = savedTime;
+            restoringFromLocal = false;
+          }
+        });
+      }
+
+      renderSongList();
+      startTypingSuggestions();
+    } catch (err) {
+      titleEl.textContent = "Error loading songs.";
+      console.error(err);
+    }
+  }
+
+  function loadSong(index, fromClick = false) {
+    const song = songs[index];
+    if (!song) return;
+
+    audio.src = `songs/${song.file}`;
+    titleEl.textContent = song.title;
+    document.getElementById("cover").src = song.artwork;
+
+    if (fromClick) {
+      audio.currentTime = 0;
+      restoringFromLocal = false;
+    }
+
+    highlightSong();
+    updateMediaSession(song);
+  }
+
+  function updateMediaSession(song) {
+    if ("mediaSession" in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: song.title,
+        artist: song.artist || "Unknown Artist",
+        album: song.album,
+        artwork: [{ src: "images/Music_square.png", sizes: "any", type: "image/png" }]
+      });
+
+      navigator.mediaSession.setActionHandler("play", () => audio.play());
+      navigator.mediaSession.setActionHandler("pause", () => audio.pause());
+      navigator.mediaSession.setActionHandler("previoustrack", prevSong);
+      navigator.mediaSession.setActionHandler("nexttrack", nextSong);
+    }
+  }
+
+  function playPause() {
+    if (audio.paused) audio.play();
+    else audio.pause();
+  }
+
+  function prevSong() {
+    currentIndex = (currentIndex - 1 + songs.length) % songs.length;
+    loadSong(currentIndex);
+    audio.play();
+  }
+
+  function nextSong() {
+    if (isShuffling) {
+      let next;
+      do {
+        next = Math.floor(Math.random() * songs.length);
+      } while (next === currentIndex && songs.length > 1);
+      currentIndex = next;
+    } else {
+      currentIndex = (currentIndex + 1) % songs.length;
+    }
+    loadSong(currentIndex);
+    audio.play();
+  }
+
+  function toggleShuffle() {
+    isShuffling = !isShuffling;
+    shuffleIcon.classList.toggle("text-green-400", isShuffling);
+  }
+
+  function highlightSong() {
+    [...songListEl.children].forEach((li, i) => {
+      li.classList.toggle("bg-indigo-800", i === currentIndex);
+    });
+  }
+
+  function renderSongList(filtered = songs) {
+    songListEl.innerHTML = "";
+    filtered.forEach((song) => {
+      const li = document.createElement("li");
+      li.className = "px-4 py-2 cursor-pointer hover:bg-indigo-700 rounded-md";
+      li.textContent = song.title;
+      li.onclick = () => {
+        currentIndex = songs.indexOf(song);
+        loadSong(currentIndex, true);
+        audio.play();
+      };
+      songListEl.appendChild(li);
+    });
+    highlightSong();
+  }
+
+  function sortSongs() {
+    songs.sort((a, b) => a.title.localeCompare(b.title));
+    renderSongList();
+  }
+
+  function filterSongs() {
+    const keyword = searchInput.value.toLowerCase();
+    const filtered = songs.filter(song => song.title.toLowerCase().includes(keyword));
+    renderSongList(filtered);
+  }
+
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  audio.addEventListener("timeupdate", () => {
+    const percent = (audio.currentTime / audio.duration) * 100;
+    progress.value = percent || 0;
+    currentTimeEl.textContent = formatTime(audio.currentTime);
+    totalTimeEl.textContent = formatTime(audio.duration || 0);
+
+    localStorage.setItem("lastIndex", currentIndex);
+    localStorage.setItem("lastTime", audio.currentTime);
+  });
+
+  progress.addEventListener("input", () => {
+    audio.currentTime = (progress.value / 100) * audio.duration;
+  });
+
+  audio.addEventListener("ended", nextSong);
+  audio.addEventListener("play", () => { playIcon.classList.add("hidden"); pauseIcon.classList.remove("hidden"); });
+  audio.addEventListener("pause", () => { playIcon.classList.remove("hidden"); pauseIcon.classList.add("hidden"); });
+
+  function startTypingSuggestions() {
+    if (!songs.length) return;
+    let i = 0, j = 0;
+    let deleting = false;
+    let typingPaused = false;
+
+    function type() {
+      if (typingPaused) return;
+      const current = songs[i].title;
+      if (!deleting) {
+        searchInput.placeholder = "Search " + current.substring(0, j++);
+        if (j > current.length) {
+          deleting = true;
+          setTimeout(type, 500);
+          return;
+        }
+      } else {
+        searchInput.placeholder = "Search " + current.substring(0, j--);
+        if (j < 0) {
+          deleting = false;
+          i = (i + 1) % songs.length;
+          j = 0;
+        }
+      }
+      setTimeout(type, deleting ? 50 : 80);
+    }
+
+    searchInput.addEventListener("input", () => {
+      if (searchInput.value.length > 0) {
+        typingPaused = true;
+        searchInput.placeholder = "Search...";
+      } else if (typingPaused) {
+        typingPaused = false;
+        j = 0;
+        type();
+      }
+    });
+    type();
+  }
+
+  window.addEventListener("DOMContentLoaded", loadSongs);
+</script>
+
+<!-- Security protection script -->
+<script>
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.onkeydown = e => {
+    if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && [73, 74].includes(e.keyCode)) || (e.ctrlKey && e.keyCode === 85)) {
+      return false;
+    }
+  };
+</script>
+
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    setTimeout(() => {
+      const toast = document.getElementById("toastNotice");
+      if (toast) {
+        toast.style.transition = "opacity 0.5s ease";
+        toast.style.opacity = "0";
+        setTimeout(() => toast.remove(), 500);
+      }
+    }, 6000);
+  });
+</script>
+
+<!-- FIXED KEYBOARD SHORTCUTS BUG -->
+<script>
+  document.addEventListener("keydown", (e) => {
+    switch (e.key) {
+      case " ":
+        e.preventDefault();
+        playPause();
+        break;
+      case "ArrowRight":
+        nextSong();
+        break;
+      case "ArrowLeft":
+        prevSong();
+        break;
+      case "s":
+      case "S":
+        toggleShuffle(); // FIXED: calls correct function instead of dead variable loop
+        break;
+      case "ArrowUp":
+        audio.volume = Math.min(1, audio.volume + 0.1);
+        break;
+      case "ArrowDown":
+        audio.volume = Math.max(0, audio.volume - 0.1);
+        break;
+    }
+  });
+</script>
+
+</body>
+</html>
