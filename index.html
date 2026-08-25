@@ -8,8 +8,7 @@
   <title>Music Player</title>
   <link rel="icon" href="images/music.png" type="image/png" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="style.css" rel="stylesheet" />
-  <script src="script.js"></script>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 font-sans text-white">
 <!-- Toast popup message -->
@@ -33,8 +32,7 @@
       <h2 id="title" class="text-xl md:text-2xl font-semibold">Loading...</h2>
     </div>
 
-    <!-- preload="metadata" instead of "auto": stops the browser from downloading
-         audio data for a track before the user presses play. Saves data on mobile. -->
+    <!-- preload="metadata": avoids downloading audio data before the user presses play -->
     <audio id="audio" preload="metadata" class="hidden"></audio>
 
     <!-- Progress -->
@@ -78,7 +76,7 @@
       </button>
     </div>
       <div class="mt-8 text-sm italic text-white/60">
-        Developed by <span class="text-white font-semibold">Kaustubh Mahamuni V.0.0.0.4</span>
+        Developed by <span class="text-white font-semibold">Kaustubh Mahamuni</span>
       </div>
   </div>
 
@@ -100,8 +98,8 @@
   <!-- Scrollable Song List -->
   <ul id="songList" class="max-h-[500px] overflow-y-auto divide-y divide-white/10 text-sm custom-scroll"></ul>
 </div>
-
 </div>
 
+<script src="script.js"></script>
 </body>
 </html>
