@@ -279,17 +279,17 @@ const audio = document.getElementById("audio");
   }
 
   window.addEventListener("DOMContentLoaded", loadSongs);
-</script>
+
 <!-- Security: Disable right-click and dev tools -->
-<script>
+
   document.addEventListener('contextmenu', e => e.preventDefault());
   document.onkeydown = e => {
     if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && [73, 74].includes(e.keyCode)) || (e.ctrlKey && e.keyCode === 85)) {
       return false;
     }
   };
-</script>
-<script>
+
+
   window.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       const toast = document.getElementById("toastNotice");
@@ -300,8 +300,7 @@ const audio = document.getElementById("audio");
       }
     }, 6000); // 6 seconds
   });
-</script>
-<script>
+
   document.addEventListener("keydown", (e) => {
   switch (e.key) {
     case " ": // Play / Pause
